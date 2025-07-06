@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import userModel from '../models/userModel.js';
 import transporter from '../config/nodemailer.js';
 
+import {EMAIL_VERIFY_TEMPLATE,PASSWORD_RESET_TEMPLATE } from '../config/emailTemplates.js'
+
 export const register = async (req,res)=>{
     const {name,email,password} = req.body;
     // console.log(req.body);
@@ -20,6 +22,7 @@ export const register = async (req,res)=>{
         const hashedPassword = await bcrypt.hash(password,10);
         const user = new userModel({name,email,password:hashedPassword})
         await user.save();
+
         // generate token
         const token = jwt.sign({id:user._id},process.env.JWT_SECRET,{expiresIn:'7d'});
 
@@ -31,10 +34,11 @@ export const register = async (req,res)=>{
             maxAge:7 * 24 * 60 * 60 * 1000
         });
 
+
       // send a welcome email
       const mailOptions = {
         from :process.env.SENDER_EMAIL,
-        to:email,
+        to:email, // user ko send krenge jisne account create kiya hai
         subject:'Welcome to Shameen Auto Spare Parts',
         text:`Welcome to GLA website .
          Your account has been created with email id :${email}`
@@ -53,12 +57,14 @@ export const register = async (req,res)=>{
     }
 }
 
+// controller function for user login
+
 
 export const login = async (req,res)=>{
     const {email,password} = req.body;
 
     if(!email || !password){
-        return res.json({success:false,message:'Email and password are reuired'})
+        return res.json({success:false,message:'Email and password are required'})
     }
     try {
         const user  = await userModel.findOne({email});
@@ -81,7 +87,9 @@ export const login = async (req,res)=>{
             maxAge:7 * 24 * 60 * 60 * 1000
         })
 
-        return res.json({success:true});
+        return res.json({
+            success:true,
+        });
         
     } catch (error) {
         return res.json({success:false,message:error.message});
@@ -105,6 +113,9 @@ export const logout = async (req,res)=>{
     }
 }
 
+
+
+
 // Send Verification OTP to the User's Email
 export const sendVerifyOtp = async (req,res)=>{
     try {
@@ -115,7 +126,7 @@ export const sendVerifyOtp = async (req,res)=>{
                 'Account already verified'})
         }
 
-        const otp = Math.floor( 100000 + Math.random() * 900000);
+        const otp =String( Math.floor( 100000 + Math.random() * 900000));
         user.verifyOtp = otp;
         user.verifyOtpExpireAt = Date.now()+2 * 60 *1000;  // 2 min 
         await user.save();
@@ -123,8 +134,9 @@ export const sendVerifyOtp = async (req,res)=>{
      const mailOption = {
         from :process.env.SENDER_EMAIL,
         to:user.email,
-        subject:'Account Verification OTP',
-        text:`Your OTP is ${otp}. Verify your account using this OTP.`
+         subject:'Account Verification OTP',
+        // text:`Your OTP is ${otp}. Verify your account using this OTP.`,
+        html :EMAIL_VERIFY_TEMPLATE.replace("{{otp}}",otp).replace("{{email}}",user.email)
 
         }
 
@@ -171,7 +183,7 @@ export const verifyEmail = async (req,res)=>{
         return res.json({success:false,message:error.message});
     }
 
-}
+} 
 
 
 // check if user is authenticated
@@ -210,7 +222,8 @@ export const sendResetOtp = async (req,res)=>{
         to:user.email,
         subject:'Password Reset OTP',
         text:`Your OTP for resetting your password is ${otp}.
-         Use this OTP to proceed with resetting your password.`
+         Use this OTP to proceed with resetting your password.`,
+         html :PASSWORD_RESET_TEMPLATE.replace("{{otp}}",otp).replace("{{email}}",user.email)
 
         }
 
