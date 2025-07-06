@@ -8,4 +8,5 @@ export default defineConfig({
     react(),
     tailwindcss(), // ✅ use Tailwind's official Vite plugin
   ],
+  base:process.env.VITE_BASE_PATH || "/mern-auth"
 })
