@@ -6,7 +6,16 @@ import connectDB from './config/db.js'
 import authRoutes from './routes/authRoutes.js'
 import userRouter from "./routes/userRouter.js";
 
+
+
 const app = express();
+
+
+
+app.use(cors({
+  origin: 'https://vite-mern-auth-w4a1.vercel.app', // your Vercel frontend URL
+  credentials: true
+}));
 
 connectDB();
 
