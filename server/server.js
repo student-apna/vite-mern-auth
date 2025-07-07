@@ -8,16 +8,18 @@ import userRouter from "./routes/userRouter.js";
 
 const app = express();
 
+// ✅ TRUST proxy for cookies (VERY IMPORTANT for deployed server like Render)
+app.set('trust proxy', 1);
+
 // ✅ CORS setup
 const allowedOrigins = [
   'http://localhost:5173',
   'https://vite-mern-auth-w4a1.vercel.app',
-  'https://vite-mern-auth-w4a1-aftab-alams-projects-3a2a889d.vercel.app' // your actual deployed domain
+  'https://vite-mern-auth-w4a1-aftab-alams-projects-3a2a889d.vercel.app'
 ];
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like Postman)
     if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       callback(null, true);
     } else {
@@ -32,7 +34,7 @@ connectDB();
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Health check route
+// ✅ Health check
 app.get('/', (req, res) => {
   res.send('API Working fine');
 });
