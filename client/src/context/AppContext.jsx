@@ -5,19 +5,20 @@ import { toast } from "react-toastify";
 export const AppContext = createContext();
 
 export const AppContextProvider = (props) => {
-  // ✅ Default backend URL from environment
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-  // ✅ Set credentials for all axios requests
   axios.defaults.withCredentials = true;
 
   const [isLoggedin, setIsLoggedin] = useState(false);
   const [userData, setUserData] = useState(null);
 
-  // ✅ Get user data after auth success
+  // ✅ Get user data with credentials
   const getUserData = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/user/data`);
+      const { data } = await axios.get(`${backendUrl}/api/user/data`, {
+        withCredentials: true
+      });
+
       if (data.success) {
         setUserData(data.userData);
       } else {
@@ -28,10 +29,13 @@ export const AppContextProvider = (props) => {
     }
   };
 
-  // ✅ Check if user is authenticated
+  // ✅ Auth check with credentials
   const getAuthState = async () => {
     try {
-      const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`);
+      const { data } = await axios.get(`${backendUrl}/api/auth/is-auth`, {
+        withCredentials: true
+      });
+
       if (data.success) {
         setIsLoggedin(true);
         getUserData(); // Fetch user info
@@ -41,12 +45,10 @@ export const AppContextProvider = (props) => {
     }
   };
 
-  // ✅ On component mount
   useEffect(() => {
     getAuthState();
   }, []);
 
-  // ✅ Shared context values
   const value = {
     backendUrl,
     isLoggedin,
