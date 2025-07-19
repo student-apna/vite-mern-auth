@@ -15,7 +15,8 @@ app.set('trust proxy', 1);
 const allowedOrigins = [
   'http://localhost:5173',
   'https://vite-mern-auth-w4a1.vercel.app',
-  'https://vite-mern-auth-w4a1-aftab-alams-projects-3a2a889d.vercel.app'
+  'https://vite-mern-auth-frontend.onrender.com'
+  
 ];
 
 app.use(cors({
